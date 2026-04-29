@@ -1,0 +1,110 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── CSS Custom Properties ──────────────────────────────────── */
+:root {
+  --brand-primary:   #ec4899;
+  --brand-secondary: #db2777;
+  --brand-light:     #fdf4f9;
+  --sidebar-width:   260px;
+  --navbar-height:   64px;
+}
+
+/* ─── Base Resets & Typography ───────────────────────────────── */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-surface-secondary text-gray-800 font-sans;
+    min-height: 100vh;
+  }
+
+  h1, h2, h3 {
+    @apply font-display;
+  }
+
+  h4, h5, h6 {
+    @apply font-sans font-semibold;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-brand-200 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-brand-300;
+  }
+}
+
+/* ─── Component Utilities ────────────────────────────────────── */
+@layer components {
+  /* Page wrapper that accounts for sidebar + navbar */
+  .page-content {
+    padding: calc(var(--navbar-height) + 1.5rem) 1.5rem 1.5rem;
+    min-height: 100vh;
+  }
+
+  /* Card */
+  .card {
+    @apply bg-white rounded-2xl shadow-card border border-gray-100 p-6;
+  }
+
+  /* Stat card */
+  .stat-card {
+    @apply bg-white rounded-2xl shadow-card border border-gray-100 p-5 
+           transition-all duration-200 hover:shadow-soft hover:-translate-y-0.5;
+  }
+
+  /* Active sidebar link */
+  .sidebar-link-active {
+    @apply bg-brand-50 text-brand-600 font-semibold;
+  }
+
+  /* Sidebar link base */
+  .sidebar-link {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-600
+           transition-all duration-150 hover:bg-gray-100 hover:text-gray-900 cursor-pointer;
+  }
+
+  /* Badge */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+}
+
+/* ─── Utility Animations ─────────────────────────────────────── */
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out both;
+  }
+
+  .animate-slide-in {
+    animation: slideIn 0.25s ease-out both;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}

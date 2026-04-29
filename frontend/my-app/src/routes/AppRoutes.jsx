@@ -1,0 +1,42 @@
+import { Routes, Route, Navigate } from "react-router-dom";
+import Layout from "../components/layout/Layout";
+import ProtectedRoute from "./ProtectedRoute";
+
+// ── Pages ──────────────────────────────────────────────────────────────────
+import Login      from "../pages/Login";
+import Dashboard  from "../pages/Dashboard";
+import Products   from "../pages/Products";
+
+import NotFound   from "../pages/NotFound";
+
+// AI page (will be added in module 9)
+// import AI from "../pages/AI";
+
+export default function AppRoutes() {
+  return (
+    <Routes>
+      {/* Public */}
+      <Route path="/login" element={<Login />} />
+
+      {/* Root → redirect to dashboard */}
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+
+      {/* Protected — all wrapped in Layout (sidebar + navbar) */}
+      <Route
+        element={
+          <ProtectedRoute>
+            <Layout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="/dashboard"  element={<Dashboard />} />
+        <Route path="/products"   element={<Products />} />
+        
+        {/* <Route path="/ai" element={<AI />} /> */}
+      </Route>
+
+      {/* 404 */}
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+}
