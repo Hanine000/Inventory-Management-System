@@ -16,7 +16,7 @@ export const useProducts = (params = {}) => {
     queryKey: [KEY, params],
     queryFn:  () => getProducts(params),
     staleTime: 1000 * 60 * 2,
-    keepPreviousData: true,   // smooth pagination
+    keepPreviousData: true,   
   });
 };
 

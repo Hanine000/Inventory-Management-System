@@ -1,18 +1,3 @@
-/**
- * pages/Products.jsx
- * ─────────────────────────────────────────────────────────────────
- * Full product management page.
- *
- * Responsibilities:
- *   • Owns all filter / pagination state
- *   • Fetches products, categories, brands, suppliers for the form
- *   • Renders the toolbar (search, filters, add button)
- *   • Opens ProductForm inside a slide-over panel for create / edit
- *   • Shows an inline confirm modal for soft-delete and restore
- *
- * Design language: dark slate + rose accent (Dashboard / ProductForm).
- */
-
 import { useState, useCallback } from "react";
 import ProductTable from "../components/product/ProductTable";
 import ProductForm  from "../components/product/ProductForm";

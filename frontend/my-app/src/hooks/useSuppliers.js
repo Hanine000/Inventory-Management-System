@@ -1,50 +1,58 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  getBrands,
-  createBrand,
-  updateBrand,
-  deleteBrand,
-  restoreBrand,
-} from "../api/brandApi";
+  getSuppliers,
+  getSupplier,
+  createSupplier,
+  updateSupplier,
+  deleteSupplier,
+  restoreSupplier,
+} from "../api/supplierApi";
 
-const KEY = "brands";
+const KEY = "suppliers";
 
-export const useBrands = (params = {}) =>
+export const useSuppliers = (params = {}) =>
   useQuery({
     queryKey: [KEY, params],
-    queryFn: () => getBrands(params),
+    queryFn: () => getSuppliers(params),
     staleTime: 1000 * 60 * 5,
     keepPreviousData: true,
   });
 
-export const useCreateBrand = () => {
+export const useSupplier = (id) =>
+  useQuery({
+    queryKey: [KEY, id],
+    queryFn: () => getSupplier(id),
+    enabled: Boolean(id),
+  });
+
+export const useCreateSupplier = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: createBrand,
+    mutationFn: createSupplier,
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
 };
 
-export const useUpdateBrand = () => {
+export const useUpdateSupplier = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: updateBrand,
+    mutationFn: updateSupplier,
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
 };
 
-export const useDeleteBrand = () => {
+export const useDeleteSupplier = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: deleteBrand,
+    mutationFn: deleteSupplier,
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
 };
 
-export const useRestoreBrand = () => {
+export const useRestoreSupplier = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: restoreBrand,
+    mutationFn: restoreSupplier,
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
 };
