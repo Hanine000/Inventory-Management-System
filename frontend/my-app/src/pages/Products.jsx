@@ -6,13 +6,9 @@ import {
   useDeleteProduct,
   useRestoreProduct,
 } from "../hooks/useProducts";
-
-// ─── Placeholder hooks (fill in when those modules are built) ─────────────────
-// These will return { data: [] } until their API + hooks are implemented.
-const useList = (hook) => {
-  try { return hook(); }
-  catch { return { data: { data: [] } }; }
-};
+import { useCategories }          from "../hooks/useCategories";
+import { useBrands }              from "../hooks/useBrands";
+import { useSuppliers }           from "../hooks/useSuppliers";
 
 // ─── Small reusable UI pieces ─────────────────────────────────────────────────
 
@@ -144,7 +140,7 @@ export default function Products() {
   const [search,   setSearchRaw] = useState("");
   const [category, setCategory]  = useState("");
   const [brand,    setBrand]     = useState("");
-  const [isActive, setIsActive]  = useState("true");      // "true" | "false" | ""
+  const [isActive, setIsActive]  = useState("true");      
   const [lowStock, setLowStock]  = useState(false);
   const [page,     setPage]      = useState(1);
   const [limit,    setLimit]     = useState(10);
@@ -186,13 +182,17 @@ export default function Products() {
   const total    = data?.total  ?? 0;
   const pages    = data?.pages  ?? 1;
 
-  // ── Supporting data (categories, brands, suppliers for the form) ─────────
-  // These will be replaced by real hooks (useCategories, useBrands, useSuppliers)
-  // when those modules are built. The Products page imports them from their
-  // own hooks — ProductForm receives them as plain arrays.
-  const categories = [];   // replace: useCategories().data?.data ?? []
-  const brands     = [];   // replace: useBrands().data?.data     ?? []
-  const suppliers  = [];   // replace: useSuppliers().data?.data  ?? []
+  // ── Supporting data — categories, brands, suppliers for toolbar + form ───
+  // useCategories takes no params (no pagination on that endpoint).
+  // useBrands / useSuppliers: fetch all with a high limit so the selects are complete.
+  const { data: catData }      = useCategories();
+  const { data: brandData }    = useBrands({ limit: 200 });
+  const { data: supplierData } = useSuppliers({ limit: 200 });
+
+  // Normalise — some endpoints return { data: [] }, others return [] directly
+  const categories = catData?.data      ?? catData      ?? [];
+  const brands     = brandData?.data    ?? brandData    ?? [];
+  const suppliers  = supplierData?.data ?? supplierData ?? [];
 
   // ── Mutations ────────────────────────────────────────────────────────────
   const deleteMutation  = useDeleteProduct();

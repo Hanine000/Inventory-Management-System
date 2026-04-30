@@ -6,6 +6,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import Login      from "../pages/Login";
 import Dashboard  from "../pages/Dashboard";
 import Products   from "../pages/Products";
+import OneProduct from "../pages/OneProduct";
 import Categories from "../pages/Categories";
 import Brands     from "../pages/Brands";
 import Suppliers  from "../pages/Suppliers";
@@ -34,6 +35,7 @@ export default function AppRoutes() {
       >
         <Route path="/dashboard"  element={<Dashboard />} />
         <Route path="/products"   element={<Products />} />
+        <Route path="/products/:id" element={<OneProduct />} />
         <Route path="/categories" element={<Categories />} />
         <Route path="/brands"     element={<Brands />} />
         <Route path="/suppliers"  element={<Suppliers />} />
