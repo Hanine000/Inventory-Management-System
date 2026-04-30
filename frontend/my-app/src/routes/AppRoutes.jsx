@@ -12,11 +12,8 @@ import Suppliers  from "../pages/Suppliers";
 import Sales      from "../pages/Sales";
 import Orders     from "../pages/Orders";
 import Profile    from "../pages/Profile";
-
+import AI         from "../pages/AI";
 import NotFound   from "../pages/NotFound";
-
-// AI page (will be added in module 9)
-// import AI from "../pages/AI";
 
 export default function AppRoutes() {
   return (
@@ -43,8 +40,8 @@ export default function AppRoutes() {
         <Route path="/sales"      element={<Sales />} />
         <Route path="/orders"     element={<Orders />} />
         <Route path="/profile"    element={<Profile />} />
-        
-        {/* <Route path="/ai" element={<AI />} /> */}
+        <Route path="/ai"         element={<AI />} />
+
       </Route>
 
       {/* 404 */}
