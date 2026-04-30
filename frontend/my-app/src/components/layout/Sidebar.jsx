@@ -115,15 +115,17 @@ const Sidebar = ({ collapsed = false }) => {
       {/* User footer */}
       {user && (
         <div className={["flex items-center gap-3 px-4 py-3 border-t border-slate-800/70 bg-slate-900/50 flex-shrink-0", collapsed ? "justify-center" : ""].join(" ")}>
-          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-rose-400 to-pink-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-            {user.name?.[0]?.toUpperCase() ?? "A"}
-          </div>
-          {!collapsed && (
-            <div className="min-w-0">
-              <p className="text-xs font-semibold text-slate-200 truncate leading-none">{user.name}</p>
-              <p className="text-[10px] text-slate-500 truncate mt-0.5 capitalize">{user.role ?? "admin"}</p>
+          <NavLink to="/profile" className="flex items-center gap-3 group min-w-0 flex-1">
+            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-rose-400 to-pink-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 group-hover:ring-2 group-hover:ring-rose-500/50 transition-all">
+              {user.name?.[0]?.toUpperCase() ?? "A"}
             </div>
-          )}
+            {!collapsed && (
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-slate-200 truncate leading-none group-hover:text-rose-400 transition-colors">{user.name}</p>
+                <p className="text-[10px] text-slate-500 truncate mt-0.5 capitalize">{user.role ?? "admin"}</p>
+              </div>
+            )}
+          </NavLink>
         </div>
       )}
     </aside>

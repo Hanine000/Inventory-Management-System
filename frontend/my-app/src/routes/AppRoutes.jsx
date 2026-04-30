@@ -10,6 +10,8 @@ import Categories from "../pages/Categories";
 import Brands     from "../pages/Brands";
 import Suppliers  from "../pages/Suppliers";
 import Sales      from "../pages/Sales";
+import Orders     from "../pages/Orders";
+import Profile    from "../pages/Profile";
 
 import NotFound   from "../pages/NotFound";
 
@@ -39,6 +41,9 @@ export default function AppRoutes() {
         <Route path="/brands"     element={<Brands />} />
         <Route path="/suppliers"  element={<Suppliers />} />
         <Route path="/sales"      element={<Sales />} />
+        <Route path="/orders"     element={<Orders />} />
+        <Route path="/profile"    element={<Profile />} />
+        
         {/* <Route path="/ai" element={<AI />} /> */}
       </Route>
 

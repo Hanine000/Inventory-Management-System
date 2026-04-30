@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useContext } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 
 const pageTitles = {
@@ -11,6 +11,7 @@ const pageTitles = {
   "/orders":     { title: "Orders",       sub: "Supplier purchase orders" },
   "/suppliers":  { title: "Suppliers",    sub: "Supplier directory" },
   "/ai":         { title: "AI Insights",  sub: "Forecasts & smart alerts" },
+  "/profile":    { title: "My Profile",   sub: "Account settings & password" },
 };
 
 const Navbar = ({ onToggleSidebar }) => {
@@ -121,6 +122,13 @@ const Navbar = ({ onToggleSidebar }) => {
               </div>
 
               <div className="py-1">
+                <Link to="/profile" onClick={() => setDropdown(false)}
+                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs text-slate-300 hover:bg-slate-800 transition-colors">
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                  </svg>
+                  My Profile
+                </Link>
                 <button
                   onClick={handleLogout}
                   className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs
