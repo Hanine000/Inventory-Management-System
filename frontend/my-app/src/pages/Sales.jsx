@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import SaleForm from "../components/sale/SaleForm";
 import { useSales, useCancelSale } from "../hooks/useSales";
 import { useProducts } from "../hooks/useProducts";
-import { formatCurrency, formatDateTime, formatRelative } from "../utils/formatDate";
+import { formatCurrency, formatDateTime, formatRelative } from "../utils/FormatDate";
 
 // ─── Shared micro-UI (same patterns as Products.jsx) ─────────────────────────
 
