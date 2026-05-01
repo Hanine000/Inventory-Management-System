@@ -1,323 +1,173 @@
+import Order from "../models/Order.js";
+import Supplier from "../models/Supplier.js";
 import Product from "../models/Product.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
+import { sendOrderEmail, sendCancelEmail } from "../utils/email.js";
+import { updateStock } from "../utils/stockManager.js";
 
+// ─── STATUS TRANSITION MAP ────────────────────────────────────────────────────
+const VALID_TRANSITIONS = {
+  Pending: ["Accepted", "Cancelled"],
+  Accepted: ["Received", "Cancelled"],
+};
 
-// creating the order and the orderitems under it 
-export const createorder = async (req, res) => {
-  try {
-    const { items, supplier, supplierName, deliverydate } = req.body;
+const isValidTransition = (current, next) =>
+  VALID_TRANSITIONS[current]?.includes(next) ?? false;
 
-    if (!supplier || !supplierName)
-      return res.status(400).json({
-        success: false,
-        message: "Supplier and supplierName are required.",
-      });
+// ─── CREATE ORDER ─────────────────────────────────────────────────────────────
+export const createOrder = asyncHandler(async (req, res, next) => {
+  const { supplier, items } = req.body;
 
-    if (!items || !Array.isArray(items) || items.length === 0)
-      return res.status(400).json({
-        success: false,
-        message: "items array is required.",
-      });
+  if (!items || items.length === 0) {
+    return next(new Error("An order must contain at least one item"));
+  }
 
-    const missingProducts = [];
-    const preparedItems = [];
+  const supplierDoc = await Supplier.findById(supplier);
+  if (!supplierDoc) return next(new Error("Supplier not found"));
 
-    for (const item of items) {
-      const product = await Product.findById(item.productId);
+  const processedItems = await Promise.all(
+    items.map(async (item) => {
+      const productDoc = await Product.findById(item.product);
+      if (!productDoc) throw new Error(`Product not found: ${item.product}`);
+      if (item.quantity < 1) throw new Error(`Invalid quantity for product: ${productDoc.name}`);
 
-      if (!product) {
-        //check product exist or no
-        //notify the admin that he is adding a orderitem does not exist(new product)
-        //  must create it first.
-        missingProducts.push({
-          productId: item.productId,
-          message: "Product does not exist",
-        });
-        continue;
-      }
-
-      preparedItems.push({
-        productId: product._id,
-        productName: product.name,
-        sku: product.sku,
+      return {
+        product: productDoc._id,
+        productName: productDoc.name, 
         quantity: item.quantity,
-        unitprice: product.price.sellingPrice,
-      });
+        unitCost: item.unitCost,
+        subtotal: item.unitCost * item.quantity,
+      };
+    })
+  );
+
+  const totalAmount = processedItems.reduce((sum, item) => sum + item.subtotal, 0);
+
+  const order = await Order.create({
+    supplier: supplierDoc._id,
+    supplierName: supplierDoc.name,
+    supplierEmail: supplierDoc.email,
+    items: processedItems,
+    totalAmount,
+    status: "Pending",
+    createdBy: req.user._id,
+  });
+
+  try {
+  await sendOrderEmail(order);
+} catch (err) {
+  console.error("Email failed:", err.message);
+}
+
+  res.status(201).json({ success: true, data: order });
+});
+
+// ─── GET ALL ORDERS ───────────────────────────────────────────────────────────
+export const getOrders = asyncHandler(async (req, res) => {
+  const { status, supplier, page = 1, limit = 20 } = req.query;
+
+  const filter = {};
+  if (status) filter.status = status;
+  if (supplier) filter.supplier = supplier;
+
+  const orders = await Order.find(filter)
+    .populate("supplier", "name email")
+    .populate("createdBy", "name email")
+    .sort({ createdAt: -1 })
+    .skip((page - 1) * limit)
+    .limit(Number(limit));
+
+  const total = await Order.countDocuments(filter);
+
+  res.json({
+    success: true,
+    data: orders,
+    pagination: { total, page: Number(page), limit: Number(limit) },
+  });
+});
+
+// ─── GET SINGLE ORDER ─────────────────────────────────────────────────────────
+export const getOrder = asyncHandler(async (req, res, next) => {
+  const order = await Order.findById(req.params.id)
+    .populate("supplier", "name email")
+    .populate("items.product", "name sku")
+    .populate("createdBy", "name email");
+
+  if (!order) return next(new Error("Order not found"));
+
+  res.json({ success: true, data: order });
+});
+
+// ─── UPDATE ORDER STATUS ──────────────────────────────────────────────────────
+export const updateOrderStatus = asyncHandler(async (req, res, next) => {
+  const { status } = req.body;
+  const order = await Order.findById(req.params.id);
+
+  if (!order) return next(new Error("Order not found"));
+
+  if (!isValidTransition(order.status, status)) {
+    return next(
+      new Error(`Invalid status transition: ${order.status} → ${status}`)
+    );
+  }
+
+  order.status = status;
+
+  if (status === "Received") {
+    order.receivedAt = new Date();
+    await updateStock(order.items);
+  }
+
+  if (status === "Cancelled") {
+    await sendCancelEmail(order);
+  }
+
+  await order.save();
+
+  res.json({ success: true, data: order });
+});
+
+// ─── DELETE ORDER ─────────────────────────────────────────────────────────────
+export const deleteOrder = asyncHandler(async (req, res, next) => {
+  const order = await Order.findById(req.params.id);
+
+  if (!order) return next(new Error("Order not found"));
+
+  if (order.status !== "Cancelled") {
+    return next(new Error("Only cancelled orders can be deleted"));
+  }
+
+  await order.deleteOne();
+
+  res.json({ success: true, message: "Order deleted successfully" });
+});
+// ─── ACCEPT ORDER (called from email link, no auth required) ──────────────────
+export const acceptOrder = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).send(`
+        <h2>Order not found.</h2>
+      `);
     }
 
-    const order = new Order({
-      items: preparedItems,
-      supplier,
-      supplierName,
-      deliverydate,
-      state: "pending",
-    });
+    if (order.status !== "Pending") {
+      return res.status(400).send(`
+        <h2>This order is already <strong>${order.status}</strong>.</h2>
+        <p>No changes were made.</p>
+      `);
+    }
 
+    order.status = "Accepted";
     await order.save();
 
-    res.status(201).json({
-      success: true,
-      data: {
-        orderId: order._id,
-        totalPrice: order.totalPrice,
-        missingProducts,
-      },
-      message: "Order created successfully",
-    });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
+    return res.status(200).send(`
+      <h2>✅ Order ${order.orderNumber} has been accepted successfully.</h2>
+      <p>Thank you! The Lumière team has been notified.</p>
+    `);
 
-
-
-// get all orders 
-
-export const getorders = async (req, res) => {
-  try {
-    const orders = await Order.find().sort({ createdAt: -1 });
-
-    res.json({
-      success: true,
-      data: orders.map(o => ({
-        orderId: o._id,
-        orderDate: o.orderDate,
-        totalPrice: o.totalPrice,
-        state: o.state,
-        supplierName: o.supplierName,
-        deliverydate: o.deliverydate,
-        receivedat: o.receivedat,
-
-        // FIXED: correct variable + virtuals
-        totalItems: o.totalItems,
-        isOverdue: o.isOverdue,
-      })),
-      message: "Orders fetched successfully",
-    });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
-
-
-
-// get single order details(each order item info plus the order info)
-
-export const getorder = async (req, res) => {
-  try {
-    const id = req.params.id;
-    const order = await Order.findById(id);
-
-    if (!order)
-      // in case the order under that id get delted or does not exist 
-      return res.status(404).json({
-        success: false,
-        message: `Order ${id} not found.`,
-      });
-
-    res.json({
-      success: true,
-      data: {
-        orderId: order._id,
-        orderDate: order.orderDate,
-        totalPrice: order.totalPrice,
-        state: order.state,
-        supplier: order.supplier,
-        supplierName: order.supplierName,
-        deliverydate: order.deliverydate,
-        receivedat: order.receivedat,
-        items: order.items,
-
-        // optional but consistent with getorders
-        totalItems: order.totalItems,
-        isOverdue: order.isOverdue,
-      },
-      message: "Order fetched successfully",
-    });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
-
-
-
-// change the state of order to receive + updating stock since the order is checked.
-
-export const receiveorder = async (req, res) => {
-  try {
-    const id = req.params.id;
-    const order = await Order.findById(id);
-
-    if (!order)
-      return res.status(404).json({
-        success: false,
-        message: `Order ${id} not found.`,
-      });
-
-    // make sure the order which are pending are only the one updated 
-    if (order.state !== "pending")
-      return res.status(400).json({
-        success: false,
-        message: `Order cannot be received since it is ${order.state}`,
-      });
-
-    const missingProducts = [];
-
-    //validate ALL products ( do exist in the list) before doing anything
-    for (const item of order.items) {
-      const product = await Product.findById(item.productId);
-
-      if (!product) {
-        missingProducts.push({
-          productId: item.productId,
-          productName: item.productName || "Unknown product",
-          message: `The product "${item.productName || "Unknown"}" does not exist. Please create it first.`,
-        });
-      }
-    }
-
-    // if one product does not exist or missing  from the list of product STOP all means no stock update, no state change
-    if (missingProducts.length > 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Order cannot be received. Some products are missing.",
-        missingProducts,
-      });
-    }
-
-    //all products exist so update stock
-    for (const item of order.items) {
-      const product = await Product.findById(item.productId);
-      product.stock.quantity += item.quantity;
-      await product.save();
-    }
-
-    //update the order state from pending to received (all product exist)
-
-    order.state = "received";
-    order.receivedat = new Date();
-
-    await order.save();
-
-    res.json({
-      success: true,
-      data: {
-        orderId: order._id,
-        state: "received",
-      },
-      message: "Order received successfully",
-    });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
-
-
-
-// Delet order but only if it is still pending 
-// to make sure keep history of old  received orders 
-
-export const deleteorder = async (req, res) => {
-  try {
-    const id = req.params.id;
-    const order = await Order.findById(id);
-
-    if (!order)
-      return res.status(404).json({
-        success: false,
-        message: `Order ${id} not found.`,
-      });
-
-    if (order.state === "received")
-      return res.status(400).json({
-        success: false,
-        message: "Cannot delete a received order (frozen 🔒).",
-      });
-
-    await Order.findByIdAndDelete(id);
-
-    res.json({
-      success: true,
-      data: { orderId: id },
-      message: "Order deleted successfully",
-    });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
-};
-
-
-
-// updating  but only PENDING ones.
-
-export const updateorder = async (req, res) => {
-  try {
-    const orderId = req.params.id;
-    const { items } = req.body;
-
-    // order with no order items is not order
-    if (!items || !Array.isArray(items))
-      return res.status(400).json({
-        success: false,
-        message: "order items is required for the order to be valid",
-      });
-
-    const order = await Order.findById(orderId);
-
-    // order not found in database
-    if (!order)
-      return res.status(404).json({
-        success: false,
-        message: `Order ${orderId} not found.`,
-      });
-
-    // order already received cannot be updated to protect the order history 
-    if (order.state === "received")
-      return res.status(400).json({
-        success: false,
-        message: "Order is already received and cannot be updated",
-      });
-
-    const missingProducts = [];
-    const newItems = [];
-
-    // validate products and build new order items
-    for (const item of items) {
-      const product = await Product.findById(item.productId);
-
-      // product does not exist in database
-      if (!product) {
-        missingProducts.push({
-          productId: item.productId,
-          message: "Product does not exist pls create it",
-        });
-        continue;
-      }
-
-      // rebuild order item with latest changed product data
-      newItems.push({
-        productId: product._id,
-        productName: product.name,
-        sku: product.sku,
-        quantity: item.quantity,
-        unitprice: product.price.sellingPrice,
-      });
-    }
-
-    // update order items with new data we changed
-    order.items = newItems;
-    await order.save();
-
-    // response with update result
-    res.json({
-      success: true,
-      data: {
-        orderId: order._id,
-        totalPrice: order.totalPrice,
-        missingProducts,
-      },
-      message: "Order updated successfully",
-    });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+  } catch (error) {
+    return res.status(500).send(`<h2>Server error. Please try again later.</h2>`);
   }
 };

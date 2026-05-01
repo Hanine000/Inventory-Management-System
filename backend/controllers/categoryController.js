@@ -1,5 +1,5 @@
-import Category from "../models/category.js";
-import Product from "../models/product.js";
+import Category from "../models/Category.js";
+import Product from "../models/Product.js";
 
 
 // geting Categories in another word  the list all categories 
@@ -30,7 +30,7 @@ export const getCategories = async (req, res) => {
     const categories = await Category.find().sort({ name: 1 });
 
     const result = categories.map((c) => ({
-      categoryId: c._id,
+      _id: c._id,
       name: c.name,
       productCount: countMap.get(c._id.toString()) || 0,
     }));
@@ -68,7 +68,7 @@ export const createCategory = async (req, res) => {
     res.status(201).json({
       success: true,
       data: {
-        categoryId: category._id,
+        _id: category._id,
         name: category.name,
         productCount: 0, //new category still no product under it 
       },
@@ -112,7 +112,7 @@ export const updateCategory = async (req, res) => {
     res.json({
       success: true,
       data: {
-        categoryId: category._id,
+        _id: category._id,
         name: category.name,
       },
       message: "Category updated successfully",

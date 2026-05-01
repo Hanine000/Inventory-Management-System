@@ -24,7 +24,7 @@ export const getProducts = asyncHandler(async (req, res) => {
   const {
     search,
     category,
-    brand,        
+    brand,
     isActive,
     lowStock,
     page = 1,
@@ -33,9 +33,15 @@ export const getProducts = asyncHandler(async (req, res) => {
 
   const filter = {};
 
-  if (search)   filter.$text    = { $search: search };
+  if (search) {
+    filter.$or = [
+      { name: { $regex: search, $options: "i" } },
+      { sku:  { $regex: search, $options: "i" } },
+    ];
+  }
+
   if (category) filter.category = category;
-  if (brand)    filter.brand    = brand;              
+  if (brand)    filter.brand    = brand;
 
   filter.isActive = isActive !== undefined ? isActive === "true" : true;
 
@@ -49,7 +55,7 @@ export const getProducts = asyncHandler(async (req, res) => {
     Product.find(filter)
       .populate("category", "name")
       .populate("supplier", "name")
-      .populate("brand", "name logo")  
+      .populate("brand", "name logo")
       .skip(skip)
       .limit(Number(limit))
       .sort({ createdAt: -1 }),

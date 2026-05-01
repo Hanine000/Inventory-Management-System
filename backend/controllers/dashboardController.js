@@ -104,3 +104,106 @@ export const getStats = async (req, res, next) => {
     next(error);
   }
 };
+// ─── 5. SALES LAST 7 DAYS (line chart) ───────────────────────────────────────
+export const getSalesLast7Days = async (req, res, next) => {
+  try {
+    const days = 7;
+    const start = new Date();
+    start.setDate(start.getDate() - days + 1);
+    start.setHours(0, 0, 0, 0);
+
+    const result = await Sale.aggregate([
+      { $match: { status: "completed", createdAt: { $gte: start } } },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          revenue: { $sum: "$totalAmount" },
+          count:   { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    // fill missing days with 0
+    const map = Object.fromEntries(result.map((r) => [r._id, r]));
+    const data = Array.from({ length: days }, (_, i) => {
+      const d = new Date(start);
+      d.setDate(d.getDate() + i);
+      const key = d.toISOString().slice(0, 10);
+      return {
+        date:    key,
+        revenue: map[key]?.revenue ?? 0,
+        count:   map[key]?.count   ?? 0,
+      };
+    });
+
+    res.status(200).json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ─── 6. SALES BY CATEGORY (pie chart) ────────────────────────────────────────
+export const getSalesByCategory = async (req, res, next) => {
+  try {
+    const result = await Sale.aggregate([
+      { $match: { status: "completed" } },
+      { $unwind: "$items" },
+      {
+        $lookup: {
+          from:         "products",
+          localField:   "items.product",
+          foreignField: "_id",
+          as:           "productDoc",
+        },
+      },
+      { $unwind: "$productDoc" },
+      {
+        $lookup: {
+          from:         "categories",
+          localField:   "productDoc.category",
+          foreignField: "_id",
+          as:           "categoryDoc",
+        },
+      },
+      { $unwind: "$categoryDoc" },
+      {
+        $group: {
+          _id:      "$categoryDoc._id",
+          name:     { $first: "$categoryDoc.name" },
+          revenue:  { $sum: { $multiply: ["$items.unitPrice", "$items.quantity"] } },
+          count:    { $sum: "$items.quantity" },
+        },
+      },
+      { $sort: { revenue: -1 } },
+    ]);
+
+    res.status(200).json({ success: true, data: result });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ─── 7. TOP 5 PRODUCTS (bar chart) ───────────────────────────────────────────
+export const getTopProducts = async (req, res, next) => {
+  try {
+    const result = await Sale.aggregate([
+      { $match: { status: "completed" } },
+      { $unwind: "$items" },
+      {
+        $group: {
+          _id:      "$items.product",
+          name:     { $first: "$items.productName" },
+          quantity: { $sum: "$items.quantity" },
+          revenue:  { $sum: { $multiply: ["$items.unitPrice", "$items.quantity"] } },
+        },
+      },
+      { $sort: { revenue: -1 } },
+      { $limit: 5 },
+    ]);
+
+    res.status(200).json({ success: true, data: result });
+  } catch (error) {
+    next(error);
+  }
+};

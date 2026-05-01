@@ -1,27 +1,19 @@
 import express from "express";
 import {
-  createorder,
-  getorders,
-  getorder,
-  receiveorder,
-  deleteorder,
-  updateorder,
+  createOrder,
+  getOrders,
+  getOrder,
+  updateOrderStatus,
+  deleteOrder,
+  acceptOrder,
 } from "../controllers/orderController.js";
-
+import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// create new order
-router.post("/orders", createorder);
-// get all orders
-router.get("/orders", getorders);
-// get single order
-router.get("/orders/:id", getorder);
-// update order 
-router.put("/orders/:id", updateorder);
-// mark order as received + update stock
-router.patch("/orders/:id/receive", receiveorder);
-// delete order 
-router.delete("/orders/:id", deleteorder);
+router.route("/").get(protect, getOrders).post(protect, createOrder);
+router.route("/:id").get(protect, getOrder).delete(protect, deleteOrder);
+router.route("/:id/status").patch(protect, updateOrderStatus);
+router.route("/:id/accept").get(acceptOrder);
 
 export default router;

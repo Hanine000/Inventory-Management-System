@@ -1,6 +1,8 @@
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { randomBytes } from "crypto";
+import { sendResetEmail } from "../utils/email.js";
 
 // Helper: Generate JWT Token
 const generateToken = (userId) => {
@@ -211,5 +213,77 @@ export const getUserById = async (req, res) => {
       success: false,
       message: error.message,
     });
+  }
+};
+
+// ───  FORGOT PASSWORD ───────────────────────────────────────────────────────
+
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      
+      return res.status(200).json({
+        success: true,
+        message: "If this email exists, a reset link has been sent.",
+      });
+    }
+
+    // Generate reset token and expiration
+    const token = randomBytes(32).toString("hex");
+    const expires = Date.now() + 1000 * 60 * 15; 
+
+    
+    user.resetPasswordToken   = token;
+    user.resetPasswordExpires = expires;
+    await user.save();
+
+    
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${token}`;
+    await sendResetEmail({ email: user.email, name: user.name, resetUrl });
+
+    res.status(200).json({
+      success: true,
+      message: "If this email exists, a reset link has been sent.",
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ─── RESET PASSWORD ────────────────────────────────────────────────────────
+
+export const resetPassword = async (req, res) => {
+  try {
+    const { token }       = req.params;
+    const { newPassword } = req.body;
+
+  
+    const user = await User.findOne({
+      resetPasswordToken:   token,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Reset link is invalid or has expired.",
+      });
+    }
+
+    // update password and clear reset token
+    user.password             = newPassword;
+    user.resetPasswordToken   = null;
+    user.resetPasswordExpires = null;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Password reset successfully. You can now log in.",
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };

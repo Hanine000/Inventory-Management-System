@@ -8,6 +8,8 @@ import {
   deleteAccount,
   getAllUsers,
   getUserById,
+  forgotPassword,
+  resetPassword
 } from "../controllers/authController.js";
 import { protect, adminOnly } from "../middleware/authMiddleware.js";
 
@@ -23,6 +25,11 @@ router.post("/ping", (req, res) => {
 // Public routes
 router.post("/register", register);
 router.post("/login", login);
+router.post("/forgot-password", forgotPassword);
+router.post("/reset-password/:token", resetPassword);
+router.get("/reset-password/:token", (req, res) => {
+  res.redirect(`${process.env.FRONTEND_URL}/reset-password/${req.params.token}`);
+});
 
 // Protected routes
 router.get("/me", protect, getCurrentUser);

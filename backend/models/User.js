@@ -25,6 +25,16 @@ const userSchema = new mongoose.Schema(
       select: false, // never returned in queries by default
     },
 
+    // ─── RESET PASSWORD ───────────────────────────────────────────────────────────
+    resetPasswordToken: {
+      type: String,
+      default: null,
+    },
+    resetPasswordExpires: {
+      type: Date,
+      default: null,
+    },
+
     lastLogin: {
       type: Date,
       default: null,
@@ -54,7 +64,7 @@ userSchema.pre("save", async function () {
     if (!this.isNew) {
       this.passwordChangedAt = new Date();
     }
-    
+
     // No next() needed! The async function resolves and Mongoose continues.
   } catch (err) {
     // If something goes wrong, throwing the error stops the save process
