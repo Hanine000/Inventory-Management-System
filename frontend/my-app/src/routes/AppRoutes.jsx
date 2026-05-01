@@ -4,6 +4,8 @@ import ProtectedRoute from "./ProtectedRoute";
 
 // ── Pages ──────────────────────────────────────────────────────────────────
 import Login      from "../pages/Login";
+import ForgotPassword from "../pages/ForgotPassword";
+import ResetPassword  from "../pages/ResetPassword";
 import Dashboard  from "../pages/Dashboard";
 import Products   from "../pages/Products";
 import OneProduct from "../pages/OneProduct";
@@ -21,6 +23,8 @@ export default function AppRoutes() {
     <Routes>
       {/* Public */}
       <Route path="/login" element={<Login />} />
+      <Route path="/forgot-password"        element={<ForgotPassword />} />
+<Route path="/reset-password/:token"  element={<ResetPassword />} />
 
       {/* Root → redirect to dashboard */}
       <Route path="/" element={<Navigate to="/dashboard" replace />} />

@@ -29,3 +29,13 @@ export const changePasswordApi = async (data) => {
 export const deleteAccountApi = async () => {
   return api.delete("/users/account");
 };
+
+// ─── FORGOT PASSWORD ───────────────────────────────────
+export const forgotPasswordApi = async (data) => {
+  return api.post("/users/forgot-password", data);
+};
+
+// ─── RESET PASSWORD ────────────────────────────────────
+export const resetPasswordApi = async ({ token, newPassword }) => {
+  return api.post(`/users/reset-password/${token}`, { newPassword });
+};

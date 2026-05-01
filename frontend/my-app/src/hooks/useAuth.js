@@ -7,6 +7,8 @@ import {
   updateProfileApi,
   changePasswordApi,
   deleteAccountApi,
+  forgotPasswordApi,
+  resetPasswordApi,
 } from "../api/authApi";
 import { AuthContext } from "../context/AuthContext";
 
@@ -79,5 +81,19 @@ export const useChangePassword = () => {
 export const useDeleteAccount = () => {
   return useMutation({
     mutationFn: deleteAccountApi,
+  });
+};
+
+// ─── FORGOT PASSWORD ───────────────────────────────────────────────────────
+export const useForgotPassword = () => {
+  return useMutation({
+    mutationFn: forgotPasswordApi,
+  });
+};
+
+// ─── RESET PASSWORD ────────────────────────────────────────────────────────
+export const useResetPassword = () => {
+  return useMutation({
+    mutationFn: resetPasswordApi,
   });
 };
