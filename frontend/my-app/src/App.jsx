@@ -1,7 +1,5 @@
 import { BrowserRouter as Router } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-
 import AppRoutes from "./routes/AppRoutes";
 import { AuthProvider } from "./context/AuthProvider";
 
@@ -10,7 +8,7 @@ const queryClient = new QueryClient({
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
-      staleTime: 1000 * 60 * 5,        // 5 min
+      staleTime: 1000 * 60 * 5,       
     },
   },
 });
@@ -29,7 +27,6 @@ function App() {
         </AuthProvider>
       </Router>
 
-      <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
 }
