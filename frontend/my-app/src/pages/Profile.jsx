@@ -1,7 +1,7 @@
 import { useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useUpdateProfile, useChangePassword } from "../hooks/useAuth";
-import { formatDate } from "../utils/formatDate";
+import { formatDate } from "../utils/FormatDate";
 
 // ─── Shared field wrapper ──────────────────────────────────────────────────
 const Field = ({ label, error, children }) => (
