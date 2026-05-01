@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useOrders, useUpdateOrderStatus, useDeleteOrder } from "../hooks/useOrders";
 import OrderForm from "../components/order/OrderForm";
-import { formatDate, formatCurrency } from "../utils/formatDate";
+import { formatDate, formatCurrency } from "../utils/FormatDate";
 
 // ─── Status config ─────────────────────────────────────────────────────────────
 const STATUS = {

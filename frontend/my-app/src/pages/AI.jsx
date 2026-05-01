@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAlerts, useTopProducts, useForecast } from "../hooks/useAI";
-import { formatCurrency, formatDateTime } from "../utils/formatDate";
+import { formatCurrency, formatDateTime } from "../utils/FormatDate";
 
 // ─── Shared helpers ────────────────────────────────────────────────────────────
 const SectionSkeleton = ({ rows = 4 }) => (

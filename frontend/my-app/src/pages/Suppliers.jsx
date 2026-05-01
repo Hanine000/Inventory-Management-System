@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useSuppliers, useDeleteSupplier, useRestoreSupplier } from "../hooks/useSuppliers";
 import SupplierForm from "../components/supplier/SupplierForm";
-import { formatDate } from "../utils/formatDate";
+import { formatDate } from "../utils/FormatDate";
 
 // ─── Shared modal shell ───────────────────────────────────────────────────────
 const ModalShell = ({ title, onClose, children }) => (
