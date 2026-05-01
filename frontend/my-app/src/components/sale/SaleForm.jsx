@@ -1,6 +1,6 @@
 import { useState, useRef, useMemo } from "react";
 import { useCreateSale } from "../../hooks/useSales";
-import { formatCurrency } from "../../utils/formatDate";
+import { formatCurrency } from "../../utils/FormatDate";
 
 // ─── Shared micro-components ──────────────────────────────────────────────────
 

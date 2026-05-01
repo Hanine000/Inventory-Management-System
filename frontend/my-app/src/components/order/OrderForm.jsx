@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useCreateOrder } from "../../hooks/useOrders";
 import { useSuppliers } from "../../hooks/useSuppliers";
 import { useProducts } from "../../hooks/useProducts";
-import { formatCurrency } from "../../utils/formatDate";
+import { formatCurrency } from "../../utils/FormatDate";
 
 const inputCls = (err) =>
   ["w-full bg-slate-800/60 border rounded-lg px-3 py-2.5 text-sm text-slate-100",
