@@ -1,6 +1,9 @@
-import { Resend } from "resend";
+import * as Brevo from "@getbrevo/brevo";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const brevo = new Brevo.TransactionalEmailsApi();
+brevo.authentications["apiKey"].apiKey = process.env.BREVO_API_KEY;
+
+const FROM = { email: "boukhennoufa.nihan@gmail.com", name: "Lumière Admin" };
 
 // ─── BRAND TOKENS ─────────────────────────────────────────────────────────────
 const brand = {
@@ -163,6 +166,15 @@ const formatDate = (date) =>
     day:   "numeric",
   });
 
+// ─── HELPER — send via Brevo ──────────────────────────────────────────────────
+const sendEmail = ({ to, toName, subject, html }) =>
+  brevo.sendTransacEmail({
+    sender:  FROM,
+    to:      [{ email: to, name: toName ?? to }],
+    subject,
+    htmlContent: html,
+  });
+
 // ─── SEND ORDER EMAIL ─────────────────────────────────────────────────────────
 export const sendOrderEmail = async (order) => {
   const acceptUrl = `${process.env.APP_URL}/api/orders/${order._id}/accept`;
@@ -196,9 +208,9 @@ export const sendOrderEmail = async (order) => {
     </p>
   `;
 
-  await resend.emails.send({
-    from:    "Lumière Admin <onboarding@resend.dev>",
+  await sendEmail({
     to:      order.supplierEmail,
+    toName:  order.supplierName,
     subject: `[${order.orderNumber}] New Purchase Order — Action Required`,
     html:    baseTemplate({
       title:    "New Purchase Order",
@@ -240,9 +252,9 @@ export const sendCancelEmail = async (order) => {
     </p>
   `;
 
-  await resend.emails.send({
-    from:    "Lumière Admin <onboarding@resend.dev>",
+  await sendEmail({
     to:      order.supplierEmail,
+    toName:  order.supplierName,
     subject: `[${order.orderNumber}] Order Cancellation Notice`,
     html:    baseTemplate({
       title:    "Order Cancellation",
@@ -274,9 +286,9 @@ export const sendResetEmail = async ({ email, name, resetUrl }) => {
     </p>
   `;
 
-  await resend.emails.send({
-    from:    "Lumière Admin <onboarding@resend.dev>",
+  await sendEmail({
     to:      email,
+    toName:  name,
     subject: "Reset your password",
     html:    baseTemplate({
       title:    "Password Reset",
