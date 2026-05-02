@@ -55,9 +55,14 @@ export const createOrder = asyncHandler(async (req, res, next) => {
 
   res.status(201).json({ success: true, data: order });
 
-  sendOrderEmail(order).catch((err) =>
-    console.error("Order email failed:", err.message)
-  );
+  sendOrderEmail(order).catch((err) => {
+  console.error("Order email failed — full error:");
+  console.error("Message:", err.message);
+  console.error("Code:", err.code);
+  console.error("Response:", err.response);
+});
+
+ 
 });
 
 // ─── GET ALL ORDERS ───────────────────────────────────────────────────────────
