@@ -1,6 +1,6 @@
-import * as Brevo from "@getbrevo/brevo";
+import { TransactionalEmailsApi, SendSmtpEmail } from "@getbrevo/brevo";
 
-const brevo = new Brevo.TransactionalEmailsApi();
+const brevo = new TransactionalEmailsApi();
 brevo.authentications["apiKey"].apiKey = process.env.BREVO_API_KEY;
 
 const FROM = { email: "boukhennoufa.nihan@gmail.com", name: "Lumière Admin" };
@@ -167,13 +167,14 @@ const formatDate = (date) =>
   });
 
 // ─── HELPER — send via Brevo ──────────────────────────────────────────────────
-const sendEmail = ({ to, toName, subject, html }) =>
-  brevo.sendTransacEmail({
-    sender:  FROM,
-    to:      [{ email: to, name: toName ?? to }],
-    subject,
-    htmlContent: html,
-  });
+const sendEmail = ({ to, toName, subject, html }) => {
+  const email = new SendSmtpEmail();
+  email.sender      = FROM;
+  email.to          = [{ email: to, name: toName ?? to }];
+  email.subject     = subject;
+  email.htmlContent = html;
+  return brevo.sendTransacEmail(email);
+};
 
 // ─── SEND ORDER EMAIL ─────────────────────────────────────────────────────────
 export const sendOrderEmail = async (order) => {
