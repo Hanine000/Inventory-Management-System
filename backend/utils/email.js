@@ -1,16 +1,8 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
-// ─── TRANSPORTER ──────────────────────────────────────────────────────────────
-const createTransporter = () =>
-  nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-// ─── BRAND TOKENS (mirrors Sidebar: slate-950 bg, rose-500 accent) ────────────
+// ─── BRAND TOKENS ─────────────────────────────────────────────────────────────
 const brand = {
   bgPage:        "#0a0f1e",
   bgCard:        "#0f172a",
@@ -30,45 +22,43 @@ const brand = {
 
 // ─── SHARED STYLES ────────────────────────────────────────────────────────────
 const s = {
-  body:       `margin:0;padding:0;background-color:${brand.bgPage};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;`,
-  wrapper:    `width:100%;background-color:${brand.bgPage};padding:40px 0;`,
-  container:  `max-width:600px;margin:0 auto;background-color:${brand.bgCard};border-radius:12px;overflow:hidden;border:1px solid ${brand.borderSubtle};`,
-  header:     `background:linear-gradient(135deg,#1a0a0f 0%,${brand.bgCard} 60%,#1a0a15 100%);padding:32px 40px;border-bottom:1px solid ${brand.borderSubtle};`,
-  logoWrap:   `display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,${brand.accent},#db2777);box-shadow:0 4px 20px rgba(244,63,94,0.35);`,
-  logoSvg:    `display:block;`,
-  brandName:  `margin:0;font-size:20px;font-weight:800;color:${brand.textPrimary};letter-spacing:-0.5px;line-height:1;`,
-  brandSub:   `margin:3px 0 0;font-size:9px;font-weight:700;color:${brand.textAccent};letter-spacing:0.25em;text-transform:uppercase;`,
-  headerTitle:`margin:20px 0 6px;font-size:22px;font-weight:700;color:${brand.textPrimary};letter-spacing:-0.3px;`,
-  headerDesc: `margin:0;font-size:13px;color:${brand.textSecondary};`,
-  bodyPad:    `padding:32px 40px;`,
-  greeting:   `margin:0 0 16px;font-size:15px;font-weight:600;color:${brand.textPrimary};`,
-  text:       `margin:0 0 20px;font-size:14px;color:${brand.textSecondary};line-height:1.7;`,
-  badgeBlue:  `display:inline-block;padding:3px 10px;background-color:rgba(99,102,241,0.15);color:#818cf8;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.4px;text-transform:uppercase;border:1px solid rgba(99,102,241,0.25);`,
-  badgeRed:   `display:inline-block;padding:3px 10px;background-color:${brand.accentMuted};color:${brand.textAccent};border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.4px;text-transform:uppercase;border:1px solid ${brand.accentBorder};`,
-  metaBox:    `background-color:${brand.bgSection};border-radius:8px;padding:0;margin:0 0 28px;overflow:hidden;border:1px solid ${brand.borderSubtle};`,
-  metaLabel:  `font-size:12px;color:${brand.textMuted};font-weight:500;padding:12px 20px;`,
-  metaValue:  `font-size:13px;color:${brand.textPrimary};font-weight:600;padding:12px 20px;text-align:right;`,
-  metaDivider:`border:none;border-top:1px solid ${brand.borderSubtle};margin:0;`,
-  table:      `width:100%;border-collapse:collapse;margin:0 0 28px;font-size:13px;border:1px solid ${brand.borderSubtle};border-radius:8px;overflow:hidden;`,
-  thead:      `background-color:${brand.bgSection};`,
-  th:         `padding:11px 16px;text-align:left;font-size:10px;font-weight:700;color:${brand.textMuted};text-transform:uppercase;letter-spacing:0.6px;border-bottom:1px solid ${brand.borderSubtle};`,
-  thRight:    `padding:11px 16px;text-align:right;font-size:10px;font-weight:700;color:${brand.textMuted};text-transform:uppercase;letter-spacing:0.6px;border-bottom:1px solid ${brand.borderSubtle};`,
-  td:         `padding:13px 16px;color:${brand.textSecondary};border-bottom:1px solid ${brand.borderSubtle};vertical-align:middle;`,
-  tdRight:    `padding:13px 16px;color:${brand.textSecondary};border-bottom:1px solid ${brand.borderSubtle};vertical-align:middle;text-align:right;`,
-  tdBold:     `padding:13px 16px;font-weight:600;color:${brand.textPrimary};border-bottom:1px solid ${brand.borderSubtle};`,
-  totalLabel: `padding:13px 16px;font-weight:700;color:${brand.textPrimary};font-size:14px;background-color:${brand.bgSection};`,
-  totalValue: `padding:13px 16px;font-weight:700;color:${brand.textAccent};font-size:14px;text-align:right;background-color:${brand.bgSection};`,
-  ctaWrap:    `text-align:center;margin:4px 0 32px;`,
-  ctaBtn:     `display:inline-block;padding:13px 36px;background:linear-gradient(135deg,${brand.accent},${brand.accentDark});color:#ffffff;text-decoration:none;border-radius:8px;font-size:14px;font-weight:700;letter-spacing:0.3px;box-shadow:0 4px 16px rgba(244,63,94,0.35);`,
-  ctaBtnGhost:`display:inline-block;padding:13px 36px;background:transparent;color:${brand.textAccent};text-decoration:none;border-radius:8px;font-size:14px;font-weight:700;letter-spacing:0.3px;border:1px solid ${brand.accentBorder};`,
-  divider:    `border:none;border-top:1px solid ${brand.borderSubtle};margin:0 0 24px;`,
+  body:        `margin:0;padding:0;background-color:${brand.bgPage};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;`,
+  wrapper:     `width:100%;background-color:${brand.bgPage};padding:40px 0;`,
+  container:   `max-width:600px;margin:0 auto;background-color:${brand.bgCard};border-radius:12px;overflow:hidden;border:1px solid ${brand.borderSubtle};`,
+  header:      `background:linear-gradient(135deg,#1a0a0f 0%,${brand.bgCard} 60%,#1a0a15 100%);padding:32px 40px;border-bottom:1px solid ${brand.borderSubtle};`,
+  logoWrap:    `display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,${brand.accent},#db2777);box-shadow:0 4px 20px rgba(244,63,94,0.35);`,
+  logoSvg:     `display:block;`,
+  brandName:   `margin:0;font-size:20px;font-weight:800;color:${brand.textPrimary};letter-spacing:-0.5px;line-height:1;`,
+  brandSub:    `margin:3px 0 0;font-size:9px;font-weight:700;color:${brand.textAccent};letter-spacing:0.25em;text-transform:uppercase;`,
+  headerTitle: `margin:20px 0 6px;font-size:22px;font-weight:700;color:${brand.textPrimary};letter-spacing:-0.3px;`,
+  headerDesc:  `margin:0;font-size:13px;color:${brand.textSecondary};`,
+  bodyPad:     `padding:32px 40px;`,
+  greeting:    `margin:0 0 16px;font-size:15px;font-weight:600;color:${brand.textPrimary};`,
+  text:        `margin:0 0 20px;font-size:14px;color:${brand.textSecondary};line-height:1.7;`,
+  badgeBlue:   `display:inline-block;padding:3px 10px;background-color:rgba(99,102,241,0.15);color:#818cf8;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.4px;text-transform:uppercase;border:1px solid rgba(99,102,241,0.25);`,
+  badgeRed:    `display:inline-block;padding:3px 10px;background-color:${brand.accentMuted};color:${brand.textAccent};border-radius:20px;font-size:11px;font-weight:700;letter-spacing:0.4px;text-transform:uppercase;border:1px solid ${brand.accentBorder};`,
+  metaBox:     `background-color:${brand.bgSection};border-radius:8px;padding:0;margin:0 0 28px;overflow:hidden;border:1px solid ${brand.borderSubtle};`,
+  metaLabel:   `font-size:12px;color:${brand.textMuted};font-weight:500;padding:12px 20px;`,
+  metaValue:   `font-size:13px;color:${brand.textPrimary};font-weight:600;padding:12px 20px;text-align:right;`,
+  metaDivider: `border:none;border-top:1px solid ${brand.borderSubtle};margin:0;`,
+  table:       `width:100%;border-collapse:collapse;margin:0 0 28px;font-size:13px;border:1px solid ${brand.borderSubtle};border-radius:8px;overflow:hidden;`,
+  thead:       `background-color:${brand.bgSection};`,
+  th:          `padding:11px 16px;text-align:left;font-size:10px;font-weight:700;color:${brand.textMuted};text-transform:uppercase;letter-spacing:0.6px;border-bottom:1px solid ${brand.borderSubtle};`,
+  thRight:     `padding:11px 16px;text-align:right;font-size:10px;font-weight:700;color:${brand.textMuted};text-transform:uppercase;letter-spacing:0.6px;border-bottom:1px solid ${brand.borderSubtle};`,
+  td:          `padding:13px 16px;color:${brand.textSecondary};border-bottom:1px solid ${brand.borderSubtle};vertical-align:middle;`,
+  tdRight:     `padding:13px 16px;color:${brand.textSecondary};border-bottom:1px solid ${brand.borderSubtle};vertical-align:middle;text-align:right;`,
+  tdBold:      `padding:13px 16px;font-weight:600;color:${brand.textPrimary};border-bottom:1px solid ${brand.borderSubtle};`,
+  totalLabel:  `padding:13px 16px;font-weight:700;color:${brand.textPrimary};font-size:14px;background-color:${brand.bgSection};`,
+  totalValue:  `padding:13px 16px;font-weight:700;color:${brand.textAccent};font-size:14px;text-align:right;background-color:${brand.bgSection};`,
+  ctaWrap:     `text-align:center;margin:4px 0 32px;`,
+  ctaBtn:      `display:inline-block;padding:13px 36px;background:linear-gradient(135deg,${brand.accent},${brand.accentDark});color:#ffffff;text-decoration:none;border-radius:8px;font-size:14px;font-weight:700;letter-spacing:0.3px;box-shadow:0 4px 16px rgba(244,63,94,0.35);`,
+  divider:     `border:none;border-top:1px solid ${brand.borderSubtle};margin:0 0 24px;`,
   sectionLabel:`margin:0 0 12px;font-size:10px;font-weight:700;color:${brand.textMuted};text-transform:uppercase;letter-spacing:0.2em;`,
-  footer:     `padding:24px 40px;background-color:${brand.bgPage};border-top:1px solid ${brand.borderSubtle};text-align:center;`,
-  footerText: `margin:0;font-size:11px;color:${brand.textMuted};line-height:1.7;`,
-  footerLink: `color:${brand.textAccent};text-decoration:none;`,
+  footer:      `padding:24px 40px;background-color:${brand.bgPage};border-top:1px solid ${brand.borderSubtle};text-align:center;`,
+  footerText:  `margin:0;font-size:11px;color:${brand.textMuted};line-height:1.7;`,
 };
 
-// ─── LOGO SVG ─────────────────────────────────────────────────────────────────
+// ─── LOGO ─────────────────────────────────────────────────────────────────────
 const logoSvg = `
 <table cellpadding="0" cellspacing="0" border="0" style="margin-bottom:16px;">
   <tr>
@@ -124,16 +114,13 @@ const baseTemplate = ({ title, subtitle, body }) => `
 const buildMetaBox = (rows) => `
 <div style="${s.metaBox}">
   <table width="100%" cellpadding="0" cellspacing="0" border="0">
-    ${rows
-      .map(
-        ([label, value], i) => `
+    ${rows.map(([label, value], i) => `
     <tr>
       <td style="${s.metaLabel}">${label}</td>
       <td style="${s.metaValue}">${value}</td>
     </tr>
-    ${i < rows.length - 1 ? `<tr><td colspan="2"><hr style="${s.metaDivider}"/></td></tr>` : ""}`
-      )
-      .join("")}
+    ${i < rows.length - 1 ? `<tr><td colspan="2"><hr style="${s.metaDivider}"/></td></tr>` : ""}
+    `).join("")}
   </table>
 </div>
 `;
@@ -152,21 +139,17 @@ const buildItemsTable = (items, totalAmount) => `
     </tr>
   </thead>
   <tbody>
-    ${items
-      .map(
-        (item, i) => `
+    ${items.map((item, i) => `
     <tr style="background-color:${i % 2 === 0 ? brand.bgCard : brand.bgRow};">
       <td style="${s.td}">${i + 1}</td>
       <td style="${s.tdBold}">${item.productName}</td>
       <td style="${s.tdRight}">${item.quantity}</td>
-      <td style="${s.tdRight}">$${item.unitCost.toFixed(2)}</td>
-      <td style="${s.tdRight}">$${item.subtotal.toFixed(2)}</td>
-    </tr>`
-      )
-      .join("")}
+      <td style="${s.tdRight}">${item.unitCost.toFixed(2)} DZD</td>
+      <td style="${s.tdRight}">${item.subtotal.toFixed(2)} DZD</td>
+    </tr>`).join("")}
     <tr>
       <td colspan="4" style="${s.totalLabel}">Total Amount</td>
-      <td style="${s.totalValue}">$${totalAmount.toFixed(2)}</td>
+      <td style="${s.totalValue}">${totalAmount.toFixed(2)} DZD</td>
     </tr>
   </tbody>
 </table>
@@ -175,15 +158,14 @@ const buildItemsTable = (items, totalAmount) => `
 // ─── FORMAT DATE ──────────────────────────────────────────────────────────────
 const formatDate = (date) =>
   new Date(date).toLocaleDateString("en-US", {
-    year: "numeric",
+    year:  "numeric",
     month: "long",
-    day: "numeric",
+    day:   "numeric",
   });
 
 // ─── SEND ORDER EMAIL ─────────────────────────────────────────────────────────
 export const sendOrderEmail = async (order) => {
-  const transporter = createTransporter();
-  const acceptUrl = `${process.env.APP_URL}/api/order/${order._id}/accept`;
+  const acceptUrl = `${process.env.APP_URL}/api/orders/${order._id}/accept`;
 
   const body = `
     <p style="${s.greeting}">Hello, ${order.supplierName}</p>
@@ -193,11 +175,11 @@ export const sendOrderEmail = async (order) => {
     </p>
 
     ${buildMetaBox([
-      ["Order Number",  `<span style="font-family:monospace;letter-spacing:0.05em;">${order.orderNumber}</span>`],
-      ["Order Date",    formatDate(order.createdAt)],
-      ["Status",        `<span style="${s.badgeBlue}">Pending</span>`],
-      ["Total Items",   order.items.reduce((sum, i) => sum + i.quantity, 0)],
-      ["Total Amount",  `<span style="color:${brand.textAccent};font-weight:700;">$${order.totalAmount.toFixed(2)}</span>`],
+      ["Order Number", `<span style="font-family:monospace;letter-spacing:0.05em;">${order.orderNumber}</span>`],
+      ["Order Date",   formatDate(order.createdAt)],
+      ["Status",       `<span style="${s.badgeBlue}">Pending</span>`],
+      ["Total Items",  order.items.reduce((sum, i) => sum + i.quantity, 0)],
+      ["Total Amount", `<span style="color:${brand.textAccent};font-weight:700;">${order.totalAmount.toFixed(2)} DZD</span>`],
     ])}
 
     ${buildItemsTable(order.items, order.totalAmount)}
@@ -214,11 +196,11 @@ export const sendOrderEmail = async (order) => {
     </p>
   `;
 
-  await transporter.sendMail({
-    from:    `"Lumi\u00e8re Admin" <${process.env.EMAIL_USER}>`,
+  await resend.emails.send({
+    from:    "Lumière Admin <onboarding@resend.dev>",
     to:      order.supplierEmail,
     subject: `[${order.orderNumber}] New Purchase Order — Action Required`,
-    html: baseTemplate({
+    html:    baseTemplate({
       title:    "New Purchase Order",
       subtitle: `Order ${order.orderNumber} · ${formatDate(order.createdAt)}`,
       body,
@@ -228,8 +210,6 @@ export const sendOrderEmail = async (order) => {
 
 // ─── SEND CANCEL EMAIL ────────────────────────────────────────────────────────
 export const sendCancelEmail = async (order) => {
-  const transporter = createTransporter();
-
   const body = `
     <p style="${s.greeting}">Hello, ${order.supplierName}</p>
     <p style="${s.text}">
@@ -239,11 +219,11 @@ export const sendCancelEmail = async (order) => {
     </p>
 
     ${buildMetaBox([
-      ["Order Number",   `<span style="font-family:monospace;letter-spacing:0.05em;">${order.orderNumber}</span>`],
-      ["Original Date",  formatDate(order.createdAt)],
-      ["Cancelled On",   formatDate(new Date())],
-      ["Status",         `<span style="${s.badgeRed}">Cancelled</span>`],
-      ["Total Amount",   `$${order.totalAmount.toFixed(2)}`],
+      ["Order Number",  `<span style="font-family:monospace;letter-spacing:0.05em;">${order.orderNumber}</span>`],
+      ["Original Date", formatDate(order.createdAt)],
+      ["Cancelled On",  formatDate(new Date())],
+      ["Status",        `<span style="${s.badgeRed}">Cancelled</span>`],
+      ["Total Amount",  `${order.totalAmount.toFixed(2)} DZD`],
     ])}
 
     <p style="${s.text}">
@@ -260,11 +240,11 @@ export const sendCancelEmail = async (order) => {
     </p>
   `;
 
-  await transporter.sendMail({
-    from:    `"Lumi\u00e8re Admin" <${process.env.EMAIL_USER}>`,
+  await resend.emails.send({
+    from:    "Lumière Admin <onboarding@resend.dev>",
     to:      order.supplierEmail,
     subject: `[${order.orderNumber}] Order Cancellation Notice`,
-    html: baseTemplate({
+    html:    baseTemplate({
       title:    "Order Cancellation",
       subtitle: `Order ${order.orderNumber} has been cancelled`,
       body,
@@ -272,13 +252,14 @@ export const sendCancelEmail = async (order) => {
   });
 };
 
+// ─── SEND RESET EMAIL ─────────────────────────────────────────────────────────
 export const sendResetEmail = async ({ email, name, resetUrl }) => {
-  const transporter = createTransporter();
   const body = `
     <p style="${s.greeting}">Hello, ${name}</p>
     <p style="${s.text}">
       We received a request to reset your password.
-      Click the button below — this link expires in <strong style="color:${brand.textPrimary};">15 minutes</strong>.
+      Click the button below — this link expires in
+      <strong style="color:${brand.textPrimary};">15 minutes</strong>.
     </p>
 
     <div style="${s.ctaWrap}">
@@ -293,11 +274,11 @@ export const sendResetEmail = async ({ email, name, resetUrl }) => {
     </p>
   `;
 
-  await transporter.sendMail({
-    from:    `"Lumi\u00e8re Admin" <${process.env.EMAIL_USER}>`,
+  await resend.emails.send({
+    from:    "Lumière Admin <onboarding@resend.dev>",
     to:      email,
     subject: "Reset your password",
-    html: baseTemplate({
+    html:    baseTemplate({
       title:    "Password Reset",
       subtitle: "Follow the link below to set a new password",
       body,
