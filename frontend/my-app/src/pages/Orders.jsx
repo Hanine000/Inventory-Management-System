@@ -6,7 +6,7 @@ import { formatCurrency, formatDate } from "../utils/FormatDate";
 
 // ─── Status config ─────────────────────────────────────────────────────────
 const TRANSITIONS = {
-  Pending:   ["Accepted", "Cancelled"],
+  Pending:   ["Cancelled"],
   Accepted:  ["Received", "Cancelled"],
   Received:  [],
   Cancelled: [],
