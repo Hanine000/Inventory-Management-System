@@ -187,7 +187,7 @@ const formatDate = (date) =>
 
 // ─── SEND ORDER EMAIL ─────────────────────────────────────────────────────────
 export const sendOrderEmail = async (order) => {
-  const acceptUrl = `${process.env.APP_URL}/api/orders/${order._id}/accept`;
+  const acceptUrl = `${process.env.APP_URL}/api/order/${order._id}/accept`;
 
   const body = `
     <p style="${s.greeting}">Hello, ${order.supplierName}</p>
