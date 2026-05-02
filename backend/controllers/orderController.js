@@ -33,7 +33,7 @@ export const createOrder = asyncHandler(async (req, res, next) => {
 
       return {
         product: productDoc._id,
-        productName: productDoc.name, 
+        productName: productDoc.name,
         quantity: item.quantity,
         unitCost: item.unitCost,
         subtotal: item.unitCost * item.quantity,
@@ -53,13 +53,11 @@ export const createOrder = asyncHandler(async (req, res, next) => {
     createdBy: req.user._id,
   });
 
-  try {
-  await sendOrderEmail(order);
-} catch (err) {
-  console.error("Email failed:", err.message);
-}
-
   res.status(201).json({ success: true, data: order });
+
+  sendOrderEmail(order).catch((err) =>
+    console.error("Order email failed:", err.message)
+  );
 });
 
 // ─── GET ALL ORDERS ───────────────────────────────────────────────────────────
@@ -118,11 +116,13 @@ export const updateOrderStatus = asyncHandler(async (req, res, next) => {
     await updateStock(order.items);
   }
 
-  if (status === "Cancelled") {
-    await sendCancelEmail(order);
-  }
-
   await order.save();
+
+  if (status === "Cancelled") {
+    sendCancelEmail(order).catch((err) =>
+      console.error("Cancel email failed:", err.message)
+    );
+  }
 
   res.json({ success: true, data: order });
 });
