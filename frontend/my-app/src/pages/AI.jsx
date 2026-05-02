@@ -371,7 +371,7 @@ const SummaryStrip = () => {
   const topProds = useTopProducts();
   const forecast = useForecast();
 
-  const restockCount  = forecast.data?.forecast?.filter((f) => !f.stockSufficient).length ?? 0;
+  const restockCount = forecast.data?.forecast?.filter((f) => f.stockSufficient === false).length ?? 0;
   const bestRevenue   = topProds.data?.bestSellers?.reduce((s, p) => s + (p.totalRevenue ?? 0), 0) ?? 0;
   const lowStockCount = alerts.data?.lowStockCount  ?? 0;
   const overCount     = alerts.data?.overStockCount ?? 0;
