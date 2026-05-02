@@ -97,7 +97,7 @@ const SupplierForm = ({ supplier = null, onSuccess, onCancel }) => {
       {/* Name */}
       <Field label="Supplier Name" required error={errors.name}>
         <input name="name" value={form.name} onChange={handleChange}
-          placeholder="e.g. Beauty Wholesale Co." autoFocus
+          placeholder="Enter supplier name..." autoFocus
           className={inputCls(errors.name)} />
       </Field>
 
@@ -105,7 +105,7 @@ const SupplierForm = ({ supplier = null, onSuccess, onCancel }) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Field label="Email" error={errors.email}>
           <input name="email" type="email" value={form.email} onChange={handleChange}
-            placeholder="supplier@example.com"
+            placeholder="supplier@gmail.com"
             className={inputCls(errors.email)} />
         </Field>
         <Field label="Phone">
@@ -120,13 +120,6 @@ const SupplierForm = ({ supplier = null, onSuccess, onCancel }) => {
         <input name="address" value={form.address} onChange={handleChange}
           placeholder="Street, City, Country"
           className={inputCls(false)} />
-      </Field>
-
-      {/* Notes */}
-      <Field label="Notes">
-        <textarea name="note" value={form.note} onChange={handleChange}
-          rows={3} placeholder="Payment terms, delivery info, special conditions…"
-          className={`${inputCls(false)} resize-none`} />
       </Field>
 
       {/* Actions */}
