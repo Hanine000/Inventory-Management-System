@@ -131,7 +131,7 @@ export default function Categories() {
         {!isLoading && filtered.length > 0 && (
           <div className="divide-y divide-slate-800/50">
             {filtered.map((cat, idx) => (
-              <div key={cat.categoryId} className="grid grid-cols-12 px-5 py-4 items-center hover:bg-slate-800/30 transition-colors group">
+              <div key={cat._id} className="grid grid-cols-12 px-5 py-4 items-center hover:bg-slate-800/30 transition-colors group">
                 <div className="col-span-1"><span className="text-xs text-slate-600">{idx + 1}</span></div>
                 <div className="col-span-6 flex items-center gap-3">
                   <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-rose-500/20 to-pink-500/10 border border-rose-500/20 flex items-center justify-center flex-shrink-0">
@@ -171,7 +171,7 @@ export default function Categories() {
       {modalOpen && <FormModal category={editTarget} onSuccess={closeModal} onClose={closeModal} />}
       {deleteTarget && (
         <ConfirmModal category={deleteTarget} isPending={deleteMutation.isPending}
-          onConfirm={() => deleteMutation.mutate(deleteTarget.categoryId, { onSuccess: () => setDeleteTarget(null) })}
+          onConfirm={() => deleteMutation.mutate(deleteTarget._id, { onSuccess: () => setDeleteTarget(null) })}
           onCancel={() => setDeleteTarget(null)} />
       )}
     </div>

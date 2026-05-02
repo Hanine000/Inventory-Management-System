@@ -159,7 +159,7 @@ const ProductForm = ({ product = null, categories = [], brands = [], suppliers =
         <div className="sm:col-span-2">
           <Field label="Product Name" required error={errors.name}>
             <input name="name" value={form.name} onChange={handleChange}
-              placeholder="e.g. Rose Glow Serum" className={inputCls(errors.name)} />
+              placeholder="Enter product name..." className={inputCls(errors.name)} />
           </Field>
         </div>
         <Field label="Status">

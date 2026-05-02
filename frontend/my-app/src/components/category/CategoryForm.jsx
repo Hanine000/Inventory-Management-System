@@ -55,7 +55,7 @@ const CategoryForm = ({ category = null, onSuccess, onCancel }) => {
         <input
           value={name}
           onChange={(e) => { setName(e.target.value); setError(""); setServerError(""); }}
-          placeholder="e.g. Skincare, Makeup, Fragrances…"
+          placeholder="Enter category name..."
           className={inputCls(error)}
           autoFocus
         />

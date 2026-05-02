@@ -80,7 +80,7 @@ const BrandForm = ({ brand = null, onSuccess, onCancel }) => {
         <input
           value={name}
           onChange={(e) => { setName(e.target.value); setNameError(""); setServerError(""); }}
-          placeholder="e.g. L'Oréal, MAC, Fenty Beauty…"
+          placeholder="Enter brand name..."
           className={inputCls(nameError)}
           autoFocus
         />
