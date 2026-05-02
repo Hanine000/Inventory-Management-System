@@ -1,14 +1,28 @@
-import nodemailer from "nodemailer";
+// No imports needed — using native fetch (Node 18+)
 
-const transporter = nodemailer.createTransport({
-  host:   "smtp-relay.brevo.com",
-  port:   587,
-  secure: false,
-  auth: {
-    user: process.env.BREVO_SMTP_USER,  
-    pass: process.env.BREVO_SMTP_KEY,    
-  },
-});
+// ─── SEND via Brevo HTTP API (port 443 — never blocked by Render) ─────────────
+const sendEmail = async ({ to, toName, subject, html }) => {
+  const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+    method:  "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "api-key":       process.env.BREVO_API_KEY,
+    },
+    body: JSON.stringify({
+      sender:      { email: "boukhennoufa.nihan@gmail.com", name: "Lumière Admin" },
+      to:          [{ email: to, name: toName ?? to }],
+      subject,
+      htmlContent: html,
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message ?? `Brevo error ${res.status}`);
+  }
+
+  return res.json();
+};
 
 // ─── BRAND TOKENS ─────────────────────────────────────────────────────────────
 const brand = {
@@ -171,23 +185,8 @@ const formatDate = (date) =>
     day:   "numeric",
   });
 
-// ─── HELPER — send via Brevo ──────────────────────────────────────────────────
-const sendEmail = ({ to, toName, subject, html }) =>
-  transporter.sendMail({
-    from:    '"Lumière Admin" <boukhennoufa.nihan@gmail.com>',
-    to:      `${toName ?? ""} <${to}>`,
-    subject,
-    html,
-  });
-
 // ─── SEND ORDER EMAIL ─────────────────────────────────────────────────────────
 export const sendOrderEmail = async (order) => {
-
-  // ── debug ──────────────────────────────────────────────
-  console.log("BREVO_SMTP_USER:", process.env.BREVO_SMTP_USER);
-  console.log("BREVO_SMTP_KEY:",  process.env.BREVO_SMTP_KEY ? "exists" : "MISSING");
-  // ───────────────────────────────────────────────────────
-  
   const acceptUrl = `${process.env.APP_URL}/api/orders/${order._id}/accept`;
 
   const body = `
