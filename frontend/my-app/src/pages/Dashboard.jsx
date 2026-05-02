@@ -34,7 +34,7 @@ const greeting = () => {
 
 const StatCard = ({ label, value, sub, icon, gradient, loading }) => (
   <div
-    className={`relative overflow-hidden rounded-2xl p-5 border border-slate-700/40 ${gradient}`}
+    className={`relative overflow-hidden rounded-2xl p-5 border border-white/5 backdrop-blur-sm ${gradient}`}
   >
     <div className="absolute -top-6 -right-6 w-28 h-28 rounded-full blur-2xl opacity-20 bg-white pointer-events-none" />
     <div className="relative flex items-start justify-between gap-3">
@@ -45,7 +45,7 @@ const StatCard = ({ label, value, sub, icon, gradient, loading }) => (
         {loading ? (
           <div className="h-8 w-24 bg-white/10 rounded-lg animate-pulse mb-1" />
         ) : (
-          <p className="text-3xl font-bold text-white tracking-tight leading-none">
+          <p className="text-2xl font-bold text-white tracking-tight leading-none">
             {value}
           </p>
         )}
@@ -220,9 +220,9 @@ export default function Dashboard() {
         <StatCard
           label="Total Revenue"
           loading={statsLoading}
-          value={formatCurrency(stats?.totalRevenue ?? 0)}
+          value={formatCurrency(stats?.totalRevenue ?? 0, "DZD")}
           sub={`${stats?.totalSalesCount ?? 0} completed sales`}
-          gradient="bg-gradient-to-br from-rose-600 to-pink-700"
+          gradient="bg-gradient-to-br from-rose-600/30 to-pink-700/30"
           icon={
             <svg
               className="w-5 h-5 text-white"
@@ -244,7 +244,7 @@ export default function Dashboard() {
           loading={statsLoading}
           value={stats?.totalProducts ?? 0}
           sub="Active in catalog"
-          gradient="bg-gradient-to-br from-violet-600 to-purple-700"
+          gradient="bg-gradient-to-br from-violet-600/30 to-purple-700/30"
           icon={
             <svg
               className="w-5 h-5 text-white"
@@ -266,7 +266,7 @@ export default function Dashboard() {
           loading={statsLoading}
           value={stats?.totalCategories ?? 0}
           sub="Active categories"
-          gradient="bg-gradient-to-br from-blue-600 to-cyan-700"
+          gradient="bg-gradient-to-br from-blue-600/30 to-cyan-700/30"
           icon={
             <svg
               className="w-5 h-5 text-white"
@@ -293,10 +293,10 @@ export default function Dashboard() {
               : "All items stocked"
           }
           gradient={
-            (stats?.lowStockCount ?? 0) > 0
-              ? "bg-gradient-to-br from-amber-600 to-orange-700"
-              : "bg-gradient-to-br from-emerald-600 to-teal-700"
-          }
+  (stats?.lowStockCount ?? 0) > 0
+    ? "bg-gradient-to-br from-amber-600/30 to-orange-700/30"
+    : "bg-gradient-to-br from-emerald-600/30 to-teal-700/30"
+}
           icon={
             <svg
               className="w-5 h-5 text-white"
@@ -465,7 +465,13 @@ export default function Dashboard() {
                 />
                 <YAxis
                   tick={{ fill: "#475569", fontSize: 11 }}
-                  tickFormatter={(v) => `$${v.toLocaleString()}`}
+                  tickFormatter={(v) =>
+                    new Intl.NumberFormat("fr-DZ", {
+                      style: "currency",
+                      currency: "DZD",
+                      maximumFractionDigits: 0,
+                    }).format(v)
+                  }
                 />
                 <Tooltip
                   contentStyle={{
@@ -474,7 +480,13 @@ export default function Dashboard() {
                     borderRadius: 8,
                   }}
                   labelStyle={{ color: "#94a3b8", fontSize: 11 }}
-                  formatter={(v) => [`$${v.toLocaleString()}`, "Revenue"]}
+                  formatter={(v) => [
+                    new Intl.NumberFormat("fr-DZ", {
+                      style: "currency",
+                      currency: "DZD",
+                    }).format(v),
+                    "Revenue",
+                  ]}
                   labelFormatter={(v) =>
                     new Date(v).toLocaleDateString("en-US", {
                       weekday: "short",
