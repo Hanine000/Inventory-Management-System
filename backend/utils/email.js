@@ -182,6 +182,12 @@ const sendEmail = ({ to, toName, subject, html }) =>
 
 // ─── SEND ORDER EMAIL ─────────────────────────────────────────────────────────
 export const sendOrderEmail = async (order) => {
+
+  // ── debug ──────────────────────────────────────────────
+  console.log("BREVO_SMTP_USER:", process.env.BREVO_SMTP_USER);
+  console.log("BREVO_SMTP_KEY:",  process.env.BREVO_SMTP_KEY ? "exists" : "MISSING");
+  // ───────────────────────────────────────────────────────
+  
   const acceptUrl = `${process.env.APP_URL}/api/orders/${order._id}/accept`;
 
   const body = `
