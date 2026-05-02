@@ -1,9 +1,14 @@
-import { TransactionalEmailsApi, SendSmtpEmail } from "@getbrevo/brevo";
+import nodemailer from "nodemailer";
 
-const brevo = new TransactionalEmailsApi();
-brevo.authentications["apiKey"].apiKey = process.env.BREVO_API_KEY;
-
-const FROM = { email: "boukhennoufa.nihan@gmail.com", name: "Lumière Admin" };
+const transporter = nodemailer.createTransport({
+  host:   "smtp-relay.brevo.com",
+  port:   587,
+  secure: false,
+  auth: {
+    user: process.env.BREVO_SMTP_USER,  
+    pass: process.env.BREVO_SMTP_KEY,    
+  },
+});
 
 // ─── BRAND TOKENS ─────────────────────────────────────────────────────────────
 const brand = {
@@ -167,14 +172,13 @@ const formatDate = (date) =>
   });
 
 // ─── HELPER — send via Brevo ──────────────────────────────────────────────────
-const sendEmail = ({ to, toName, subject, html }) => {
-  const email = new SendSmtpEmail();
-  email.sender      = FROM;
-  email.to          = [{ email: to, name: toName ?? to }];
-  email.subject     = subject;
-  email.htmlContent = html;
-  return brevo.sendTransacEmail(email);
-};
+const sendEmail = ({ to, toName, subject, html }) =>
+  transporter.sendMail({
+    from:    '"Lumière Admin" <boukhennoufa.nihan@gmail.com>',
+    to:      `${toName ?? ""} <${to}>`,
+    subject,
+    html,
+  });
 
 // ─── SEND ORDER EMAIL ─────────────────────────────────────────────────────────
 export const sendOrderEmail = async (order) => {
