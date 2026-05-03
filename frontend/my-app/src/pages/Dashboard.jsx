@@ -148,11 +148,24 @@ export default function Dashboard() {
     error: statsError,
     refetch,
   } = useDashboardStats();
-  const { data: lowStockData, isLoading: lowStockLoading } = useLowStock();
+  const {
+    data: lowStockData,
+    isLoading: lowStockLoading,
+    refetch: refetchLowStock,
+  } = useLowStock();
   const lowStockProducts = lowStockData?.products ?? [];
-  const { data: salesLast7Days } = useSalesLast7Days();
-  const { data: salesByCategory } = useSalesByCategory();
-  const { data: topProducts } = useTopProducts();
+  const { data: salesLast7Days, refetch: refetchSales7 } = useSalesLast7Days();
+  const { data: salesByCategory, refetch: refetchCategory } =
+    useSalesByCategory();
+  const { data: topProducts, refetch: refetchTop } = useTopProducts();
+
+  const refetchAll = () => {
+    refetch();
+    refetchLowStock();
+    refetchSales7();
+    refetchCategory();
+    refetchTop();
+  };
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -167,7 +180,7 @@ export default function Dashboard() {
           </p>
         </div>
         <button
-          onClick={() => refetch()}
+          onClick={refetchAll}
           className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800 border border-slate-700 text-xs text-slate-400 hover:text-slate-200 hover:border-slate-600 transition-all"
         >
           <svg
@@ -293,10 +306,10 @@ export default function Dashboard() {
               : "All items stocked"
           }
           gradient={
-  (stats?.lowStockCount ?? 0) > 0
-    ? "bg-gradient-to-br from-amber-600/30 to-orange-700/30"
-    : "bg-gradient-to-br from-emerald-600/30 to-teal-700/30"
-}
+            (stats?.lowStockCount ?? 0) > 0
+              ? "bg-gradient-to-br from-amber-600/30 to-orange-700/30"
+              : "bg-gradient-to-br from-emerald-600/30 to-teal-700/30"
+          }
           icon={
             <svg
               className="w-5 h-5 text-white"
@@ -465,13 +478,8 @@ export default function Dashboard() {
                 />
                 <YAxis
                   tick={{ fill: "#475569", fontSize: 11 }}
-                  tickFormatter={(v) =>
-                    new Intl.NumberFormat("fr-DZ", {
-                      style: "currency",
-                      currency: "DZD",
-                      maximumFractionDigits: 0,
-                    }).format(v)
-                  }
+                  tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
+                  width={40}
                 />
                 <Tooltip
                   contentStyle={{
@@ -480,13 +488,7 @@ export default function Dashboard() {
                     borderRadius: 8,
                   }}
                   labelStyle={{ color: "#94a3b8", fontSize: 11 }}
-                  formatter={(v) => [
-                    new Intl.NumberFormat("fr-DZ", {
-                      style: "currency",
-                      currency: "DZD",
-                    }).format(v),
-                    "Revenue",
-                  ]}
+                  formatter={(v) => [formatCurrency(v), "Revenue"]}
                   labelFormatter={(v) =>
                     new Date(v).toLocaleDateString("en-US", {
                       weekday: "short",
@@ -549,7 +551,7 @@ export default function Dashboard() {
                     border: "1px solid #1e293b",
                     borderRadius: 8,
                   }}
-                  formatter={(v) => [`$${v.toLocaleString()}`, "Revenue"]}
+                  formatter={(v) => [formatCurrency(v), "Revenue"]}
                 />
                 <Legend
                   formatter={(v) => (
@@ -580,7 +582,7 @@ export default function Dashboard() {
               <XAxis
                 type="number"
                 tick={{ fill: "#475569", fontSize: 11 }}
-                tickFormatter={(v) => `$${v.toLocaleString()}`}
+                tickFormatter={(v) => formatCurrency(v)}
               />
               <YAxis
                 type="category"
@@ -594,7 +596,7 @@ export default function Dashboard() {
                   border: "1px solid #1e293b",
                   borderRadius: 8,
                 }}
-                formatter={(v) => [`$${v.toLocaleString()}`, "Revenue"]}
+                formatter={(v) => [formatCurrency(v), "Revenue"]}
               />
               <Bar dataKey="revenue" radius={[0, 6, 6, 0]}>
                 {topProducts.map((_, i) => (
